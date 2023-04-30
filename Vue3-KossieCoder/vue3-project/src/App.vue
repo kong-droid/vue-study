@@ -1,16 +1,65 @@
 <template>
-  <!-- vue2의 경우 div끼리 묶을 경우 상위에 div가 필요했지만 이제 vue3에서는 나란히 둘 수 있다. -->
-  <div class="name">{{ name }}</div>
-  <!-- 함수는 이렇게 () 넣어줘야 한다. 매개 변수도 보낼 수 있다. -->
-  <!-- <div>{{ greet }}</div> -->
-  <!-- v-bind는 : 와 같다. -->
-  <input :type="type" :class="nameClass" :value="name"/>
-  <button 
-    class="btn btn-success"
-    @click="updateName"
+  <!-- 
+    v-show, v-if 차이점
+    v-show : 초반에 모두 랜더링 해와서 처음 속도는 느리지만 이후에 빠름
+    v-if : 조건문에 따라 랜더링 해오고 바뀔 때 마다 랜더링 하기 때문에 이후엔 느림
+    상황에 맞게 사용하면 좋을 것 같다.
+  -->
+  <!-- <div v-show="toggle">true</div>
+  <div v-show="!toggle">false</div> -->
+  <div v-if="toggle">true</div>
+  <div v-else>false</div>
+  <button
+    @click="onToggle"
+    class="btn btn-primary" 
   >
-    Click
+    click me!
   </button>
+  <div class="container">
+    <h1>To-do List</h1>
+    <!-- form은 제출이 되면 자동으로 리프레시를 한다. 
+        방지 방법은 event를 통해 제어한다.
+        ex ) e.preventDefault();
+        ex ) submit.prevent
+    -->
+    <form class="d-flex" @submit.prevent="onSubmit">
+      <div>
+        <div class="flex-grow-1 mr-2">
+          <input 
+            type="text" 
+            v-model="toDo.what" 
+            class="form-control"
+            placeholder="type new To-do!"
+          />          
+          <input 
+            type="text" 
+            v-model="toDo.name" 
+            class="form-control"
+            placeholder="what's your name?"
+          />
+        </div>
+        <div>
+          <button 
+            class="btn btn-success" 
+            type="submit"
+          >
+            Add
+          </button>
+        </div>
+        <div v-if="hasError" style="color: red;">this is field cannot be empty!</div>
+      </div>
+    </form>
+    <!-- {{toDos}} -->
+    <!-- :key값은 각각의 노드의 위치를 파악하기 위해 사용한다.-->
+    <div 
+      class="card mt-2" 
+      v-for="doIt in toDos" 
+      :key="doIt.what">
+      <div  class="card-body p-2">
+        {{"오늘 해야할 일 : \t" + doIt.what + "\t ," + "작성자 : \t" + doIt.name}}
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -20,40 +69,48 @@
   export default {
     // 화면에 데이터나 이벤트를 그려지게함
     setup() {
-      let name = ref("Kong Mi Hyang");
-      let type = ref("text");
-      const nameClass = ref("name");
-      // let name = reactive({
-      //   id : 1
-      // });
+      const toggle = ref(false);
       
-      // 펑션을 몇 개든 만들어도 된다.
-      // const greeting = (name) => {
-      //   return 'Hello, ' + name;
-      // };
+      const hasError = ref(false);
 
-      // const greet = greeting(name);
-      // 또 ref로 접근하면 name.value로 값을 가져와야 한다.
-      // 아마 콘솔 찍으면 이것저것 있을 것 같다.
-      // ref에는 다양한 객체가 들어갈 수 있다.
-      // reactive는 오로지 자료만 가져올 수 있다. 이벤트 접근 권한의 차이인 듯
-      const updateName = () => {
-          name.value = "Kossie";
-          // name.id = 2;
+      // 만약 객체로 접근한다면...?
+      const toDo = ref({
+        what : '',
+        name : ''
+      });
+    
+      const toDos = ref([
+        {what : 'Vue 공부', name: '공미향'},
+        {what : 'JPA 공부', name: '공미향'},
+        {what : 'Android 공부', name: '공미향'},
+        {what : 'React 공부', name: '공미향'},
+        {what : '소프트웨어 공학 공부', name: '공미향'},
+      ]);
+
+      const onSubmit = () => {
+        // e.preventDefault();
+        if(toDo.value.what === '') {
+          hasError.value = true;
+        } else {
+          hasError.value = false;
+          toDos.value.push(toDo.value);
+        }
       }
+      
+      const onToggle = () => {
+        toggle.value = !toggle.value;
+      };
+
+      
 
       return {
-        name,
-        type,
-        nameClass,
-        updateName
+        toDo, 
+        toDos,
+        onSubmit,
+        toggle,
+        onToggle,
+        hasError
       };
     }
   }
 </script>
-
-<style>
-  .name {
-    color: blue;
-  }
-</style>
